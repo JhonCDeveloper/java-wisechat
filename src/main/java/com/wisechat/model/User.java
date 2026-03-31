@@ -4,43 +4,76 @@ import java.sql.Timestamp;
 
 /**
  * POJO que representa la entidad USER de la base de datos.
+ *
+ * Atributos:
+ *   - idUser    : identificador único (PK)
+ *   - nombre    : nombre completo del usuario (Not Null)
+ *   - email     : correo electrónico único (Not Null)
+ *   - password  : contraseña hasheada
+ *   - creadoEn  : marca de tiempo de creación
  */
 public class User {
 
-    private int idUser;
-    private String name;
-    private String email;
-    private String password;
-    private Timestamp createdAt;
+    // ─── Atributos privados ───────────────────────────────────────────────────
+    private int       idUser;
+    private String    nombre;
+    private String    email;
+    private String    password;
+    private Timestamp creadoEn;
 
+    // ─── Constructor vacío (requerido por JDBC al mapear ResultSet) ───────────
     public User() {}
 
-    public User(int idUser, String name, String email, String password, Timestamp createdAt) {
-        this.idUser    = idUser;
-        this.name      = name;
-        this.email     = email;
-        this.password  = password;
-        this.createdAt = createdAt;
+    // ─── Constructor completo ─────────────────────────────────────────────────
+    /**
+     * @param idUser    ID del usuario (generado por AUTO_INCREMENT)
+     * @param nombre    Nombre completo
+     * @param email     Correo electrónico único
+     * @param password  Contraseña (debe almacenarse hasheada)
+     * @param creadoEn  Timestamp de creación
+     */
+    public User(int idUser, String nombre, String email, String password, Timestamp creadoEn) {
+        this.idUser   = idUser;
+        this.nombre   = nombre;
+        this.email    = email;
+        this.password = password;
+        this.creadoEn = creadoEn;
     }
 
-    // --- Getters y Setters ---
-    public int getIdUser()               { return idUser; }
-    public void setIdUser(int idUser)    { this.idUser = idUser; }
+    // ─── Constructor sin ID (para insertar nuevos registros) ─────────────────
+    /**
+     * @param nombre   Nombre completo
+     * @param email    Correo electrónico
+     * @param password Contraseña
+     */
+    public User(String nombre, String email, String password) {
+        this.nombre   = nombre;
+        this.email    = email;
+        this.password = password;
+    }
 
-    public String getName()              { return name; }
-    public void setName(String name)     { this.name = name; }
+    // ─── Getters ──────────────────────────────────────────────────────────────
+    public int getIdUser()         { return idUser; }
+    public String getNombre()      { return nombre; }
+    public String getEmail()       { return email; }
+    public String getPassword()    { return password; }
+    public Timestamp getCreadoEn() { return creadoEn; }
 
-    public String getEmail()             { return email; }
-    public void setEmail(String email)   { this.email = email; }
+    // ─── Setters ──────────────────────────────────────────────────────────────
+    public void setIdUser(int idUser)           { this.idUser   = idUser; }
+    public void setNombre(String nombre)        { this.nombre   = nombre; }
+    public void setEmail(String email)          { this.email    = email; }
+    public void setPassword(String password)    { this.password = password; }
+    public void setCreadoEn(Timestamp creadoEn) { this.creadoEn = creadoEn; }
 
-    public String getPassword()                  { return password; }
-    public void setPassword(String password)     { this.password = password; }
-
-    public Timestamp getCreatedAt()              { return createdAt; }
-    public void setCreatedAt(Timestamp createdAt){ this.createdAt = createdAt; }
-
+    // ─── toString ─────────────────────────────────────────────────────────────
     @Override
     public String toString() {
-        return "User{idUser=" + idUser + ", name='" + name + "', email='" + email + "'}";
+        return "User{"
+            + "idUser="    + idUser
+            + ", nombre='" + nombre   + '\''
+            + ", email='"  + email    + '\''
+            + ", creado="  + creadoEn
+            + '}';
     }
 }

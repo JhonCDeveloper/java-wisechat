@@ -1,71 +1,87 @@
 package com.wisechat.main;
 
-import com.wisechat.dao.*;
-import com.wisechat.model.*;
+import com.wisechat.dao.BusinessDAO;
+import com.wisechat.dao.UserDAO;
+import com.wisechat.model.Business;
+import com.wisechat.model.User;
 import com.wisechat.util.ConexionDB;
 
+import java.util.List;
+
 /**
- * Clase principal de prueba del proyecto Wisechat.
- * Verifica la conexión y ejecuta operaciones CRUD básicas.
+ * Clase de prueba principal — Módulos User y Business.
+ * Verifica las operaciones CRUD mediante los DAOs con JDBC.
  */
 public class App {
 
     public static void main(String[] args) {
-        System.out.println("====================================");
-        System.out.println("   WISECHAT - Prueba de Conexión   ");
-        System.out.println("====================================\n");
+
+        System.out.println("════════════════════════════════════════");
+        System.out.println("  WISECHAT — Prueba CRUD User & Business");
+        System.out.println("════════════════════════════════════════\n");
 
         try {
-            // --- 1. Verificar conexión (Singleton) ---
-            ConexionDB db = ConexionDB.getInstancia();
-            System.out.println("Conexión obtenida: " + db.getConexion());
+            // ── Instanciar DAOs ──────────────────────────────────────────────
+            UserDAO     userDAO     = new UserDAO();
+            BusinessDAO businessDAO = new BusinessDAO();
 
-            // --- 2. Prueba: USER ---
-            System.out.println("\n[TEST] Creando usuario...");
-            UserDAO userDAO = new UserDAOImpl();
-            User nuevoUsuario = new User();
-            nuevoUsuario.setName("Ana López");
-            nuevoUsuario.setEmail("ana.lopez@wisechat.com");
-            nuevoUsuario.setPassword("hashed_password_123");
-            userDAO.crear(nuevoUsuario);
+            // ════════════════════════════════════════════════════════════════
+            // BLOQUE 1: CRUD de USER
+            // ════════════════════════════════════════════════════════════════
+            System.out.println("─── [USER] Insertar ───────────────────────");
+            User nuevoUsuario = new User("Carlos Mendoza", "carlos@wisechat.com", "pass_hasheada_123");
+            userDAO.insertarUsuario(nuevoUsuario);
 
-            System.out.println("[TEST] Listando usuarios:");
-            userDAO.listarTodo().forEach(System.out::println);
+            System.out.println("\n─── [USER] Listar todos ───────────────────");
+            List<User> usuarios = userDAO.listarTodosLosUsuarios();
+            usuarios.forEach(System.out::println);
 
-            // --- 3. Prueba: BUSINESS ---
-            System.out.println("\n[TEST] Creando empresa...");
-            BusinessDAO businessDAO = new BusinessDAOImpl();
-            Business empresa = new Business();
-            empresa.setIdUser(1);
-            empresa.setName("Tech Solutions SAS");
-            empresa.setIndustry("Tecnología");
-            empresa.setDescription("Empresa de desarrollo de software.");
-            businessDAO.crear(empresa);
+            System.out.println("\n─── [USER] Consultar por ID (id=1) ────────");
+            User usuarioEncontrado = userDAO.consultarUsuarioPorId(1);
+            if (usuarioEncontrado != null) {
+                System.out.println("Encontrado: " + usuarioEncontrado);
+            }
 
-            System.out.println("[TEST] Listando empresas:");
-            businessDAO.listarTodo().forEach(System.out::println);
+            System.out.println("\n─── [USER] Actualizar (id=1) ──────────────");
+            User usuarioActualizado = new User(1, "Carlos Mendoza (Act.)", "carlos.nuevo@wisechat.com", "nueva_pass_hasheada", null);
+            userDAO.actualizarUsuario(usuarioActualizado);
 
-            // --- 4. Prueba: MESSAGES ---
-            System.out.println("\n[TEST] Registrando mensaje...");
-            MessageDAO messageDAO = new MessageDAOImpl();
-            Message msg = new Message();
-            msg.setIdUser(1);
-            msg.setMessageText("¡Hola desde Wisechat!");
-            msg.setSender("user");
-            messageDAO.crear(msg);
+            System.out.println("\n─── [USER] Eliminar (id=1) ────────────────");
+            userDAO.eliminarUsuario(1);
 
-            System.out.println("[TEST] Listando mensajes:");
-            messageDAO.listarTodo().forEach(System.out::println);
+            // ════════════════════════════════════════════════════════════════
+            // BLOQUE 2: CRUD de BUSINESS
+            // ════════════════════════════════════════════════════════════════
+            System.out.println("\n─── [BUSINESS] Insertar ───────────────────");
+            Business nuevaEmpresa = new Business(2, "InnovateTech SAS", "Tecnología", "Empresa líder en IA.");
+            businessDAO.insertarEmpresa(nuevaEmpresa);
+
+            System.out.println("\n─── [BUSINESS] Listar todas ───────────────");
+            List<Business> empresas = businessDAO.listarTodasLasEmpresas();
+            empresas.forEach(System.out::println);
+
+            System.out.println("\n─── [BUSINESS] Consultar por ID (id=1) ────");
+            Business empresaEncontrada = businessDAO.consultarEmpresaPorId(1);
+            if (empresaEncontrada != null) {
+                System.out.println("Encontrada: " + empresaEncontrada);
+            }
+
+            System.out.println("\n─── [BUSINESS] Actualizar (id=1) ──────────");
+            Business empresaActualizada = new Business(1, 2, "InnovateTech SAS (Act.)", "IA y Datos", "Descripción actualizada.");
+            businessDAO.actualizarEmpresa(empresaActualizada);
+
+            System.out.println("\n─── [BUSINESS] Eliminar (id=1) ────────────");
+            businessDAO.eliminarEmpresa(1);
 
         } catch (Exception e) {
-            System.err.println("\n[ERROR] " + e.getMessage());
+            System.err.println("\n[ERROR GENERAL] " + e.getMessage());
             e.printStackTrace();
         } finally {
-            // Cerrar la conexión al terminar
+            // Cerrar la conexión al finalizar
             ConexionDB.getInstancia().cerrarConexion();
-            System.out.println("\n====================================");
-            System.out.println("   Pruebas finalizadas.            ");
-            System.out.println("====================================");
+            System.out.println("\n════════════════════════════════════════");
+            System.out.println("  Pruebas finalizadas.");
+            System.out.println("════════════════════════════════════════");
         }
     }
 }
