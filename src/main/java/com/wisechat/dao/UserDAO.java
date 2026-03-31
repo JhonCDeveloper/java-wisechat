@@ -4,6 +4,7 @@ import com.wisechat.model.User;
 import com.wisechat.util.ConexionDB;
 
 import java.sql.Connection;
+import java.sql.Statement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,7 +18,7 @@ import java.util.List;
  * usando JDBC nativo con PreparedStatement.
  *
  * Métodos disponibles:
- *   - insertarUsuario(User)
+ *   - insertarUsuario(User)  → retorna int con el ID generado
  *   - consultarUsuarioPorId(int)
  *   - listarTodosLosUsuarios()
  *   - actualizarUsuario(User)
@@ -40,26 +41,42 @@ public class UserDAO {
     // =========================================================================
 
     /**
-     * Inserta un nuevo usuario en la tabla USER.
+     * Inserta un nuevo usuario en la tabla USER y retorna el ID auto-generado.
      *
-     * @param usuario Objeto User con nombre, email y password (id ignorado).
+     * Usa {@code Statement.RETURN_GENERATED_KEYS} para recuperar el id_user
+     * asignado por AUTO_INCREMENT, evitando una segunda consulta a la BD.
+     *
+     * @param usuario Objeto User con nombre, email y password (idUser ignorado).
+     * @return        ID del usuario recién insertado, o -1 si la operación falló.
      */
-    public void insertarUsuario(User usuario) {
+    public int insertarUsuario(User usuario) {
         String sql = "INSERT INTO USER (name, email, password) VALUES (?, ?, ?)";
 
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        // RETURN_GENERATED_KEYS indica al driver que capture el ID auto-generado
+        try (PreparedStatement ps = conexion.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, usuario.getNombre());
             ps.setString(2, usuario.getEmail());
             ps.setString(3, usuario.getPassword());
 
             int filasAfectadas = ps.executeUpdate();
-            System.out.println("[UserDAO] Usuario insertado correctamente. "
-                    + "Filas afectadas: " + filasAfectadas);
+            System.out.println("[UserDAO] Usuario insertado. Filas afectadas: " + filasAfectadas);
+
+            // Recuperar el ID generado por AUTO_INCREMENT
+            try (ResultSet claves = ps.getGeneratedKeys()) {
+                if (claves.next()) {
+                    int idGenerado = claves.getInt(1);
+                    System.out.println("[UserDAO] ID generado para el nuevo usuario: " + idGenerado);
+                    return idGenerado;
+                }
+            }
 
         } catch (SQLException e) {
             System.err.println("[UserDAO] Error al insertar usuario: " + e.getMessage());
         }
+
+        // Retorno centinela: indica que la inserción no generó un ID válido
+        return -1;
     }
 
     // =========================================================================
