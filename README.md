@@ -102,15 +102,6 @@ wisechat-db/
 
 ---
 
-## 📦 Empaquetado (Protocolo SENA)
-
-Para generar el entregable final en formato ZIP:
-
-```bash
-# Generar ZIP usando PowerShell
-Compress-Archive -Path . -DestinationPath "../NOMBREAPELLIDO_AA2_EV01.zip"
-```
-
 ---
 
 ## 🔗 Tecnologías
