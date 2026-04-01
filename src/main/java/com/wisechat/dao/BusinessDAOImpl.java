@@ -3,93 +3,119 @@ package com.wisechat.dao;
 import com.wisechat.model.Business;
 import com.wisechat.util.ConexionDB;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Implementación JDBC del DAO para la entidad BUSINESS.
+ * Implementación de BusinessDAO con JDBC nativo usando el patrón Singleton
+ * para la conexión y try-with-resources para garantizar el control de recursos.
  */
 public class BusinessDAOImpl implements BusinessDAO {
 
-    private final Connection conexion;
-
-    public BusinessDAOImpl() {
-        this.conexion = ConexionDB.getInstancia().getConexion();
-    }
-
     @Override
-    public void crear(Business business) {
+    public void insertarNegocio(Business negocio) {
         String sql = "INSERT INTO BUSINESS (id_user, name, industry, description) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setInt(1, business.getIdUser());
-            ps.setString(2, business.getName());
-            ps.setString(3, business.getIndustry());
-            ps.setString(4, business.getDescription());
+
+        // Se usa try-with-resources para Connection y PreparedStatement
+        try (Connection con = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, negocio.getIdUser());
+            ps.setString(2, negocio.getNombre());
+            ps.setString(3, negocio.getIndustria());
+            ps.setString(4, negocio.getDescripcion());
+
             ps.executeUpdate();
-            System.out.println("[BusinessDAO] Empresa creada: " + business.getName());
+            System.out.println("[BusinessDAOImpl] Negocio insertado correctamente.");
+
         } catch (SQLException e) {
-            throw new RuntimeException("[BusinessDAO] Error al crear empresa: " + e.getMessage(), e);
+            System.err.println("[BusinessDAOImpl] Error insertarNegocio: " + e.getMessage());
         }
     }
 
     @Override
-    public List<Business> listarTodo() {
+    public List<Business> listarNegocios() {
         String sql = "SELECT id_business, id_user, name, industry, description FROM BUSINESS";
-        List<Business> lista = new ArrayList<>();
-        try (PreparedStatement ps = conexion.prepareStatement(sql);
+        List<Business> list = new ArrayList<>();
+
+        try (Connection con = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
+
             while (rs.next()) {
-                lista.add(mapearResultSet(rs));
+                list.add(mapearNegocio(rs));
             }
+
         } catch (SQLException e) {
-            throw new RuntimeException("[BusinessDAO] Error al listar empresas: " + e.getMessage(), e);
+            System.err.println("[BusinessDAOImpl] Error listarNegocios: " + e.getMessage());
         }
-        return lista;
+
+        return list;
     }
 
     @Override
-    public Business buscarPorId(int id) {
+    public Business consultarNegocio(int id) {
         String sql = "SELECT id_business, id_user, name, industry, description FROM BUSINESS WHERE id_business = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+
+        try (Connection con = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
             ps.setInt(1, id);
+
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return mapearResultSet(rs);
+                if (rs.next()) {
+                    return mapearNegocio(rs);
+                }
             }
+
         } catch (SQLException e) {
-            throw new RuntimeException("[BusinessDAO] Error al buscar empresa: " + e.getMessage(), e);
+            System.err.println("[BusinessDAOImpl] Error consultarNegocio: " + e.getMessage());
         }
         return null;
     }
 
     @Override
-    public void actualizar(Business business) {
+    public void actualizarNegocio(Business negocio) {
         String sql = "UPDATE BUSINESS SET name = ?, industry = ?, description = ? WHERE id_business = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setString(1, business.getName());
-            ps.setString(2, business.getIndustry());
-            ps.setString(3, business.getDescription());
-            ps.setInt(4, business.getIdBusiness());
+
+        try (Connection con = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, negocio.getNombre());
+            ps.setString(2, negocio.getIndustria());
+            ps.setString(3, negocio.getDescripcion());
+            ps.setInt(4, negocio.getIdBusiness());
+
             ps.executeUpdate();
-            System.out.println("[BusinessDAO] Empresa actualizada: ID " + business.getIdBusiness());
+            System.out.println("[BusinessDAOImpl] Negocio actualizado correctamente.");
+
         } catch (SQLException e) {
-            throw new RuntimeException("[BusinessDAO] Error al actualizar empresa: " + e.getMessage(), e);
+            System.err.println("[BusinessDAOImpl] Error actualizarNegocio: " + e.getMessage());
         }
     }
 
     @Override
-    public void eliminar(int id) {
+    public void eliminarNegocio(int id) {
         String sql = "DELETE FROM BUSINESS WHERE id_business = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+
+        try (Connection con = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
             ps.setInt(1, id);
             ps.executeUpdate();
-            System.out.println("[BusinessDAO] Empresa eliminada: ID " + id);
+            System.out.println("[BusinessDAOImpl] Negocio eliminado correctamente.");
+
         } catch (SQLException e) {
-            throw new RuntimeException("[BusinessDAO] Error al eliminar empresa: " + e.getMessage(), e);
+            System.err.println("[BusinessDAOImpl] Error eliminarNegocio: " + e.getMessage());
         }
     }
 
-    private Business mapearResultSet(ResultSet rs) throws SQLException {
+    // Método auxiliar unicamente para el mapeo del ResultSet
+    private Business mapearNegocio(ResultSet rs) throws SQLException {
         return new Business(
             rs.getInt("id_business"),
             rs.getInt("id_user"),

@@ -3,93 +3,123 @@ package com.wisechat.dao;
 import com.wisechat.model.User;
 import com.wisechat.util.ConexionDB;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Implementación JDBC del DAO para la entidad USER.
- * Usa PreparedStatement para todas las operaciones.
+ * Implementación de UserDAO con JDBC nativo usando el patrón Singleton
+ * para la conexión y try-with-resources para el control de recursos.
  */
 public class UserDAOImpl implements UserDAO {
 
-    private final Connection conexion;
-
-    public UserDAOImpl() {
-        this.conexion = ConexionDB.getInstancia().getConexion();
-    }
-
     @Override
-    public void crear(User user) {
+    public int insertarUsuario(User usuario) {
         String sql = "INSERT INTO USER (name, email, password) VALUES (?, ?, ?)";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setString(1, user.getName());
-            ps.setString(2, user.getEmail());
-            ps.setString(3, user.getPassword());
+        
+        // try-with-resources asegura que la conexión y el statement se cierren siempre automáticamente
+        try (Connection con = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            ps.setString(1, usuario.getNombre());
+            ps.setString(2, usuario.getEmail());
+            ps.setString(3, usuario.getPassword());
+
             ps.executeUpdate();
-            System.out.println("[UserDAO] Usuario creado: " + user.getName());
+            
+            try (ResultSet claves = ps.getGeneratedKeys()) {
+                if (claves.next()) {
+                    return claves.getInt(1);
+                }
+            }
+
         } catch (SQLException e) {
-            throw new RuntimeException("[UserDAO] Error al crear usuario: " + e.getMessage(), e);
+            System.err.println("[UserDAOImpl] Error insertarUsuario: " + e.getMessage());
         }
+        return -1;
     }
 
     @Override
-    public List<User> listarTodo() {
+    public List<User> listarUsuarios() {
         String sql = "SELECT id_user, name, email, password, created_at FROM USER";
-        List<User> lista = new ArrayList<>();
-        try (PreparedStatement ps = conexion.prepareStatement(sql);
+        List<User> list = new ArrayList<>();
+
+        try (Connection con = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
+
             while (rs.next()) {
-                lista.add(mapearResultSet(rs));
+                list.add(mapearUsuario(rs));
             }
+
         } catch (SQLException e) {
-            throw new RuntimeException("[UserDAO] Error al listar usuarios: " + e.getMessage(), e);
+            System.err.println("[UserDAOImpl] Error listarUsuarios: " + e.getMessage());
         }
-        return lista;
+
+        return list;
     }
 
     @Override
-    public User buscarPorId(int id) {
+    public User consultarUsuario(int id) {
         String sql = "SELECT id_user, name, email, password, created_at FROM USER WHERE id_user = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        
+        try (Connection con = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
             ps.setInt(1, id);
+
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return mapearResultSet(rs);
+                if (rs.next()) {
+                    return mapearUsuario(rs);
+                }
             }
+
         } catch (SQLException e) {
-            throw new RuntimeException("[UserDAO] Error al buscar usuario por ID: " + e.getMessage(), e);
+            System.err.println("[UserDAOImpl] Error consultarUsuario: " + e.getMessage());
         }
         return null;
     }
 
     @Override
-    public void actualizar(User user) {
+    public void actualizarUsuario(User usuario) {
         String sql = "UPDATE USER SET name = ?, email = ?, password = ? WHERE id_user = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setString(1, user.getName());
-            ps.setString(2, user.getEmail());
-            ps.setString(3, user.getPassword());
-            ps.setInt(4, user.getIdUser());
+
+        try (Connection con = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, usuario.getNombre());
+            ps.setString(2, usuario.getEmail());
+            ps.setString(3, usuario.getPassword());
+            ps.setInt(4, usuario.getIdUser());
+
             ps.executeUpdate();
-            System.out.println("[UserDAO] Usuario actualizado: ID " + user.getIdUser());
+
         } catch (SQLException e) {
-            throw new RuntimeException("[UserDAO] Error al actualizar usuario: " + e.getMessage(), e);
+            System.err.println("[UserDAOImpl] Error actualizarUsuario: " + e.getMessage());
         }
     }
 
     @Override
-    public void eliminar(int id) {
+    public void eliminarUsuario(int id) {
         String sql = "DELETE FROM USER WHERE id_user = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+
+        try (Connection con = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
             ps.setInt(1, id);
             ps.executeUpdate();
-            System.out.println("[UserDAO] Usuario eliminado: ID " + id);
+
         } catch (SQLException e) {
-            throw new RuntimeException("[UserDAO] Error al eliminar usuario: " + e.getMessage(), e);
+            System.err.println("[UserDAOImpl] Error eliminarUsuario: " + e.getMessage());
         }
     }
 
-    private User mapearResultSet(ResultSet rs) throws SQLException {
+    // Método auxiliar unicamente para estructurar el ResultSet
+    private User mapearUsuario(ResultSet rs) throws SQLException {
         return new User(
             rs.getInt("id_user"),
             rs.getString("name"),
