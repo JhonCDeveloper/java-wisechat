@@ -31,8 +31,8 @@ Abre el archivo `src/main/java/com/wisechat/util/ConexionDB.java` y ajusta las c
 
 ```java
 private static final String URL      = "jdbc:mysql://localhost:3306/wisechat_db";
-private static final String USUARIO  = "root";      // Tu usuario MySQL
-private static final String PASSWORD = "";           // Tu contraseña MySQL
+private static final String USUARIO  = "root";      // Usuario MySQL
+private static final String PASSWORD = "";           // Contraseña MySQL
 ```
 
 ---

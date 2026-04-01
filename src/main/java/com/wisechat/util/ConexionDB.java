@@ -17,20 +17,15 @@ public class ConexionDB {
 
     // --- Instancia única (Singleton) ---
     private static ConexionDB instancia = null;
-    private Connection conexion;
 
     /**
-     * Constructor privado: carga el driver y establece la conexión.
+     * Constructor privado: carga el driver de la base de datos.
      */
     private ConexionDB() {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            this.conexion = DriverManager.getConnection(URL, USUARIO, PASSWORD);
-            System.out.println("[ConexionDB] Conexión establecida con éxito.");
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("[ConexionDB] Driver MySQL no encontrado: " + e.getMessage(), e);
-        } catch (SQLException e) {
-            throw new RuntimeException("[ConexionDB] Error al conectar con la BD: " + e.getMessage(), e);
         }
     }
 
@@ -47,34 +42,24 @@ public class ConexionDB {
     }
 
     /**
-     * Retorna el objeto Connection activo.
+     * Retorna un nuevo objeto Connection activo cada vez que se llama.
+     * Al usar try-with-resources en los DAOs, esta conexión se cerrará automáticamente de manera segura.
      *
      * @return objeto java.sql.Connection
      */
     public Connection getConexion() {
         try {
-            // Re-conectar si la conexión fue cerrada o perdida
-            if (conexion == null || conexion.isClosed()) {
-                instancia = new ConexionDB();
-            }
+            return DriverManager.getConnection(URL, USUARIO, PASSWORD);
         } catch (SQLException e) {
-            throw new RuntimeException("[ConexionDB] Error al verificar la conexión: " + e.getMessage(), e);
+            throw new RuntimeException("[ConexionDB] Error al obtener nueva conexión: " + e.getMessage(), e);
         }
-        return conexion;
     }
 
     /**
-     * Cierra la conexión activa y destruye la instancia singleton.
+     * Cierra la instancia singleton. En este patrón las conexiones individuales
+     * deben ser cerradas localmente (ej: try-with-resources).
      */
     public void cerrarConexion() {
-        try {
-            if (conexion != null && !conexion.isClosed()) {
-                conexion.close();
-                instancia = null;
-                System.out.println("[ConexionDB] Conexión cerrada correctamente.");
-            }
-        } catch (SQLException e) {
-            System.err.println("[ConexionDB] Error al cerrar la conexión: " + e.getMessage());
-        }
+        instancia = null;
     }
 }
