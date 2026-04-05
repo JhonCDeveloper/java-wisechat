@@ -67,6 +67,18 @@ Verás una salida en consola con reportes técnicos paso a paso.
 
 ---
 
+## 🌐 Despliegue Web en Tomcat 10
+
+Dado que la aplicación ha evolucionado a una versión Web empaquetada como `<packaging>war</packaging>`, necesitas desplegarla en un entorno **Apache Tomcat 10.x** usando **Jakarta EE 10**.
+
+1. **Compilar/Empaquetar:** Asegúrate de ejecutar `mvn clean compile` o verificar que tu carpeta `target/classes` está actualizada con las últimas versiones de tus Servlets y DAOs.
+2. **Despliegue de Recursos:** El directorio `src/main/webapp/` (que contiene tus `.jsp` y `WEB-INF`) debe estar mapeado o copiado de forma directa en tu directorio de despliegue de Tomcat (ej. `webapps/TU_APP`).
+3. **Clases Compiladas:** El contenido de `target/classes/` debe proveerse en `WEB-INF/classes/` en el servidor Tomcat.
+4. **Controlador JDBC (`mysql-connector-j`):** Tomcat exige que el driver MySQL esté presente localmente. Copia el `.jar` del conector de MySQL directo a la carpeta de librerías de tu webapp: `WEB-INF/lib/`.
+5. **Acceso Web:** Enciende Tomcat (`startup.bat`) y visita `http://localhost:8080/TU_APP/` para navegar por la aplicación utilizando la interfaz gráfica construida con Tailwind CSS.
+
+---
+
 ## 🏗️ Estructura del Proyecto
 
 ```
@@ -75,13 +87,20 @@ wisechat-db/
 │   └── wisechat_db.sql          # Script de creación de la BD
 ├── src/
 │   └── main/
-│       └── java/
-│           └── com/
-│               └── wisechat/
-│                   ├── dao/     # Interfaces e implementaciones DAO
-│                   ├── model/   # POJOs / Entidades
-│                   ├── util/    # ConexionDB (Singleton JDBC)
-│                   └── main/    # App.java (Ejecutable de prueba)
+│       ├── java/
+│       │   └── com/
+│       │       └── wisechat/
+│       │           ├── controller/ # Servlets (Controladores MVC Jakarta EE)
+│       │           ├── dao/        # Interfaces e implementaciones DAO
+│       │           ├── model/      # POJOs / Entidades
+│       │           ├── util/       # ConexionDB (Singleton JDBC)
+│       │           └── main/       # App.java (Ejecutable de prueba CLI)
+│       └── webapp/                 # Archivos Root Web
+│           ├── WEB-INF/
+│           │   └── web.xml         # Descriptor de Despliegue (EE 10)
+│           ├── index.jsp           # Vista Principal (Landing)
+│           ├── registro.jsp        # Formulario POST de Registro
+│           └── resultado.jsp       # Vista de Respuesta (Éxito/Error)
 ├── pom.xml
 └── README.md
 ```
@@ -107,8 +126,11 @@ wisechat-db/
 ## 🔗 Tecnologías
 
 - **Java 17** — Lenguaje principal
-- **JDBC Nativo** — Persistencia con `PreparedStatement` (Seguro contra SQL Injection)
+- **Jakarta EE 10** — Implementación de Servlets 6.0 y JSP 3.1
+- **Apache Tomcat 10** — Servidor Web / Contenedor de Servlets
 - **MySQL 8** — Motor de base de datos
-- **Maven** — Gestión de dependencias y build
-- **Patrón DAO** — Separación de lógica de acceso a datos
-- **Patrón Singleton** — Gestión única de conexión
+- **JDBC Nativo** — Persistencia con `PreparedStatement` (Seguro contra SQL Injection)
+- **Tailwind CSS** — Framework CSS para interfaces modernas y responsivas
+- **Maven** — Gestión de dependencias (`pom.xml` -> `<packaging>war</packaging>`)
+- **Patrón MVC** — Arquitectura web separando Model, View, Controller
+- **Patrón DAO & Singleton** — Separación de conexión DB y lógica de entidades

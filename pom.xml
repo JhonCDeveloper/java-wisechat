@@ -9,7 +9,7 @@
     <groupId>com.wisechat</groupId>
     <artifactId>wisechat-db</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
 
     <name>Wisechat</name>
     <description>Sistema de gestión Wisechat con persistencia JDBC nativa</description>
@@ -21,6 +21,20 @@
     </properties>
 
     <dependencies>
+        <!-- API de Servlet y JSP -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>6.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.servlet.jsp</groupId>
+            <artifactId>jakarta.servlet.jsp-api</artifactId>
+            <version>3.1.1</version>
+            <scope>provided</scope>
+        </dependency>
+
         <!-- Driver MySQL JDBC -->
         <dependency>
             <groupId>com.mysql</groupId>
