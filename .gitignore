@@ -6,7 +6,3 @@ target/
 .idea/
 .vscode/
 
-# Ignore agents folder
-agents/
-.agents/
-_agents/
