@@ -12,16 +12,13 @@ import java.util.List;
  */
 public class FormDAOImpl implements FormDAO {
 
-    private final Connection conexion;
-
-    public FormDAOImpl() {
-        this.conexion = ConexionDB.getInstancia().getConexion();
-    }
+    public FormDAOImpl() {}
 
     @Override
     public void crear(Form form) {
         String sql = "INSERT INTO FORM (id_business, title) VALUES (?, ?)";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        try (Connection conexion = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, form.getIdBusiness());
             ps.setString(2, form.getTitle());
             ps.executeUpdate();
@@ -35,7 +32,8 @@ public class FormDAOImpl implements FormDAO {
     public List<Form> listarTodo() {
         String sql = "SELECT id_form, id_business, title, created_at FROM FORM";
         List<Form> lista = new ArrayList<>();
-        try (PreparedStatement ps = conexion.prepareStatement(sql);
+        try (Connection conexion = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 lista.add(mapearResultSet(rs));
@@ -49,7 +47,8 @@ public class FormDAOImpl implements FormDAO {
     @Override
     public Form buscarPorId(int id) {
         String sql = "SELECT id_form, id_business, title, created_at FROM FORM WHERE id_form = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        try (Connection conexion = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return mapearResultSet(rs);
@@ -63,7 +62,8 @@ public class FormDAOImpl implements FormDAO {
     @Override
     public void actualizar(Form form) {
         String sql = "UPDATE FORM SET title = ? WHERE id_form = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        try (Connection conexion = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, form.getTitle());
             ps.setInt(2, form.getIdForm());
             ps.executeUpdate();
@@ -76,7 +76,8 @@ public class FormDAOImpl implements FormDAO {
     @Override
     public void eliminar(int id) {
         String sql = "DELETE FROM FORM WHERE id_form = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        try (Connection conexion = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, id);
             ps.executeUpdate();
             System.out.println("[FormDAO] Formulario eliminado: ID " + id);

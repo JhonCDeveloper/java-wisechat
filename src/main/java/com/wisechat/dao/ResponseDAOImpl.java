@@ -12,18 +12,25 @@ import java.util.List;
  */
 public class ResponseDAOImpl implements ResponseDAO {
 
-    private final Connection conexion;
-
-    public ResponseDAOImpl() {
-        this.conexion = ConexionDB.getInstancia().getConexion();
-    }
+    public ResponseDAOImpl() {}
 
     @Override
     public void crear(Response response) {
+        // En wisechat_db el esquema establece id_question si existe una tabla QUESTIONS con Constraint
+        // Para compatibilidad y evitar error Constraint FK "id_question", usamos inserción flexible.
+        // Si no usamos foreign keys estrictas, el insert normal funciona.
         String sql = "INSERT INTO RESPONSES (id_form, id_question, id_user, answer) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        try (Connection conexion = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, response.getIdForm());
-            ps.setInt(2, response.getIdQuestion());
+            
+            // Ajuste crucial: si idQuestion es 0, enviamos NULL a la BDD para evitar constraint FK error
+            if (response.getIdQuestion() == 0) {
+                ps.setNull(2, java.sql.Types.INTEGER);
+            } else {
+                ps.setInt(2, response.getIdQuestion());
+            }
+
             ps.setInt(3, response.getIdUser());
             ps.setString(4, response.getAnswer());
             ps.executeUpdate();
@@ -37,7 +44,8 @@ public class ResponseDAOImpl implements ResponseDAO {
     public List<Response> listarTodo() {
         String sql = "SELECT id_response, id_form, id_question, id_user, answer, created_at FROM RESPONSES";
         List<Response> lista = new ArrayList<>();
-        try (PreparedStatement ps = conexion.prepareStatement(sql);
+        try (Connection conexion = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 lista.add(mapearResultSet(rs));
@@ -51,7 +59,8 @@ public class ResponseDAOImpl implements ResponseDAO {
     @Override
     public Response buscarPorId(int id) {
         String sql = "SELECT id_response, id_form, id_question, id_user, answer, created_at FROM RESPONSES WHERE id_response = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        try (Connection conexion = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return mapearResultSet(rs);
@@ -65,7 +74,8 @@ public class ResponseDAOImpl implements ResponseDAO {
     @Override
     public void actualizar(Response response) {
         String sql = "UPDATE RESPONSES SET answer = ? WHERE id_response = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        try (Connection conexion = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, response.getAnswer());
             ps.setInt(2, response.getIdResponse());
             ps.executeUpdate();
@@ -78,7 +88,8 @@ public class ResponseDAOImpl implements ResponseDAO {
     @Override
     public void eliminar(int id) {
         String sql = "DELETE FROM RESPONSES WHERE id_response = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        try (Connection conexion = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, id);
             ps.executeUpdate();
             System.out.println("[ResponseDAO] Respuesta eliminada: ID " + id);

@@ -12,21 +12,18 @@ import java.util.List;
  */
 public class QuestionDAOImpl implements QuestionDAO {
 
-    private final Connection conexion;
-
-    public QuestionDAOImpl() {
-        this.conexion = ConexionDB.getInstancia().getConexion();
-    }
+    public QuestionDAOImpl() {}
 
     @Override
     public void crear(Question question) {
         String sql = "INSERT INTO QUESTIONS (id_form, question_text, type) VALUES (?, ?, ?)";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        try (Connection conexion = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, question.getIdForm());
             ps.setString(2, question.getQuestionText());
             ps.setString(3, question.getType());
             ps.executeUpdate();
-            System.out.println("[QuestionDAO] Pregunta creada: " + question.getQuestionText());
+            System.out.println("[QuestionDAO] Pregunta insertada.");
         } catch (SQLException e) {
             throw new RuntimeException("[QuestionDAO] Error al crear pregunta: " + e.getMessage(), e);
         }
@@ -36,7 +33,8 @@ public class QuestionDAOImpl implements QuestionDAO {
     public List<Question> listarTodo() {
         String sql = "SELECT id_question, id_form, question_text, type FROM QUESTIONS";
         List<Question> lista = new ArrayList<>();
-        try (PreparedStatement ps = conexion.prepareStatement(sql);
+        try (Connection conexion = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 lista.add(mapearResultSet(rs));
@@ -50,7 +48,8 @@ public class QuestionDAOImpl implements QuestionDAO {
     @Override
     public Question buscarPorId(int id) {
         String sql = "SELECT id_question, id_form, question_text, type FROM QUESTIONS WHERE id_question = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        try (Connection conexion = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return mapearResultSet(rs);
@@ -64,7 +63,8 @@ public class QuestionDAOImpl implements QuestionDAO {
     @Override
     public void actualizar(Question question) {
         String sql = "UPDATE QUESTIONS SET question_text = ?, type = ? WHERE id_question = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        try (Connection conexion = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, question.getQuestionText());
             ps.setString(2, question.getType());
             ps.setInt(3, question.getIdQuestion());
@@ -78,7 +78,8 @@ public class QuestionDAOImpl implements QuestionDAO {
     @Override
     public void eliminar(int id) {
         String sql = "DELETE FROM QUESTIONS WHERE id_question = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        try (Connection conexion = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, id);
             ps.executeUpdate();
             System.out.println("[QuestionDAO] Pregunta eliminada: ID " + id);

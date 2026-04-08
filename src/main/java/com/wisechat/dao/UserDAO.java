@@ -13,4 +13,6 @@ public interface UserDAO {
     User consultarUsuario(int id);
     void actualizarUsuario(User usuario);
     void eliminarUsuario(int id);
+    User buscarPorEmail(String email);
+    User autenticar(String email, String password);
 }

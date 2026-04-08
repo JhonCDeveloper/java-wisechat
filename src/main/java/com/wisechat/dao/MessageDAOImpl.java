@@ -12,16 +12,13 @@ import java.util.List;
  */
 public class MessageDAOImpl implements MessageDAO {
 
-    private final Connection conexion;
-
-    public MessageDAOImpl() {
-        this.conexion = ConexionDB.getInstancia().getConexion();
-    }
+    public MessageDAOImpl() {}
 
     @Override
     public void crear(Message message) {
         String sql = "INSERT INTO MESSAGES (id_user, message_text, sender) VALUES (?, ?, ?)";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        try (Connection conexion = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, message.getIdUser());
             ps.setString(2, message.getMessageText());
             ps.setString(3, message.getSender());
@@ -36,7 +33,8 @@ public class MessageDAOImpl implements MessageDAO {
     public List<Message> listarTodo() {
         String sql = "SELECT id_message, id_user, message_text, sender, created_at FROM MESSAGES";
         List<Message> lista = new ArrayList<>();
-        try (PreparedStatement ps = conexion.prepareStatement(sql);
+        try (Connection conexion = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 lista.add(mapearResultSet(rs));
@@ -50,7 +48,8 @@ public class MessageDAOImpl implements MessageDAO {
     @Override
     public Message buscarPorId(int id) {
         String sql = "SELECT id_message, id_user, message_text, sender, created_at FROM MESSAGES WHERE id_message = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        try (Connection conexion = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return mapearResultSet(rs);
@@ -64,7 +63,8 @@ public class MessageDAOImpl implements MessageDAO {
     @Override
     public void actualizar(Message message) {
         String sql = "UPDATE MESSAGES SET message_text = ?, sender = ? WHERE id_message = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        try (Connection conexion = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, message.getMessageText());
             ps.setString(2, message.getSender());
             ps.setInt(3, message.getIdMessage());
@@ -78,7 +78,8 @@ public class MessageDAOImpl implements MessageDAO {
     @Override
     public void eliminar(int id) {
         String sql = "DELETE FROM MESSAGES WHERE id_message = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        try (Connection conexion = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, id);
             ps.executeUpdate();
             System.out.println("[MessageDAO] Mensaje eliminado: ID " + id);

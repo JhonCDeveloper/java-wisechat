@@ -41,6 +41,12 @@
             <artifactId>mysql-connector-j</artifactId>
             <version>8.0.33</version>
         </dependency>
+        <!-- Utilidad para JSON -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.10.1</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -55,6 +61,35 @@
                             <mainClass>com.wisechat.main.App</mainClass>
                         </manifest>
                     </archive>
+                </configuration>
+            </plugin>
+            
+            <!-- Plugin Cargo para arrancar un Servidor Tomcat 10 local automáticamente -->
+            <plugin>
+                <groupId>org.codehaus.cargo</groupId>
+                <artifactId>cargo-maven3-plugin</artifactId>
+                <version>1.10.11</version>
+                <configuration>
+                    <container>
+                        <containerId>tomcat10x</containerId>
+                        <!-- Descargará un Tomcat 10 real al vuelo -->
+                        <zipUrlInstaller>
+                            <url>https://archive.apache.org/dist/tomcat/tomcat-10/v10.0.27/bin/apache-tomcat-10.0.27.zip</url>
+                        </zipUrlInstaller>
+                        <dependencies>
+                            <!-- Inyectamos el driver MySQL en la carpeta lib de Tomcat -->
+                            <dependency>
+                                <groupId>com.mysql</groupId>
+                                <artifactId>mysql-connector-j</artifactId>
+                                <classpath>shared</classpath>
+                            </dependency>
+                        </dependencies>
+                    </container>
+                    <configuration>
+                        <properties>
+                            <cargo.servlet.port>8080</cargo.servlet.port>
+                        </properties>
+                    </configuration>
                 </configuration>
             </plugin>
         </plugins>

@@ -16,6 +16,32 @@ public class Response {
 
     public Response() {}
 
+    /**
+     * Constructor sin ID para insertar nuevas respuestas del formulario de onboarding.
+     * El ID y el timestamp los genera la base de datos.
+     *
+     * @param idForm      ID del formulario al que pertenece esta respuesta.
+     * @param idQuestion  ID de la pregunta correspondiente (puede ser 0 si no aplica).
+     * @param idUser      ID del usuario que responde.
+     * @param answer      Texto de la respuesta.
+     */
+    public Response(int idForm, int idQuestion, int idUser, String answer) {
+        this.idForm     = idForm;
+        this.idQuestion = idQuestion;
+        this.idUser     = idUser;
+        this.answer     = answer;
+    }
+
+    /**
+     * Constructor completo para mapear registros de la base de datos.
+     *
+     * @param idResponse  ID de la respuesta (PK).
+     * @param idForm      ID del formulario (FK).
+     * @param idQuestion  ID de la pregunta (FK).
+     * @param idUser      ID del usuario (FK).
+     * @param answer      Texto de la respuesta.
+     * @param createdAt   Timestamp de creación.
+     */
     public Response(int idResponse, int idForm, int idQuestion, int idUser, String answer, Timestamp createdAt) {
         this.idResponse  = idResponse;
         this.idForm      = idForm;

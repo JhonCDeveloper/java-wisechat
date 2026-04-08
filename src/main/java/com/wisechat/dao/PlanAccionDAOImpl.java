@@ -12,21 +12,18 @@ import java.util.List;
  */
 public class PlanAccionDAOImpl implements PlanAccionDAO {
 
-    private final Connection conexion;
-
-    public PlanAccionDAOImpl() {
-        this.conexion = ConexionDB.getInstancia().getConexion();
-    }
+    public PlanAccionDAOImpl() {}
 
     @Override
     public void crear(ActionsPlan plan) {
         String sql = "INSERT INTO ACTIONS_PLAN (id_business, description, status) VALUES (?, ?, ?)";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        try (Connection conexion = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, plan.getIdBusiness());
             ps.setString(2, plan.getDescription());
             ps.setString(3, plan.getStatus());
             ps.executeUpdate();
-            System.out.println("[PlanAccionDAO] Plan de acción creado.");
+            System.out.println("[PlanAccionDAO] Plan creado.");
         } catch (SQLException e) {
             throw new RuntimeException("[PlanAccionDAO] Error al crear plan: " + e.getMessage(), e);
         }
@@ -36,7 +33,8 @@ public class PlanAccionDAOImpl implements PlanAccionDAO {
     public List<ActionsPlan> listarTodo() {
         String sql = "SELECT id_action, id_business, description, status, created_at FROM ACTIONS_PLAN";
         List<ActionsPlan> lista = new ArrayList<>();
-        try (PreparedStatement ps = conexion.prepareStatement(sql);
+        try (Connection conexion = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 lista.add(mapearResultSet(rs));
@@ -50,7 +48,8 @@ public class PlanAccionDAOImpl implements PlanAccionDAO {
     @Override
     public ActionsPlan buscarPorId(int id) {
         String sql = "SELECT id_action, id_business, description, status, created_at FROM ACTIONS_PLAN WHERE id_action = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        try (Connection conexion = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return mapearResultSet(rs);
@@ -64,7 +63,8 @@ public class PlanAccionDAOImpl implements PlanAccionDAO {
     @Override
     public void actualizar(ActionsPlan plan) {
         String sql = "UPDATE ACTIONS_PLAN SET description = ?, status = ? WHERE id_action = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        try (Connection conexion = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, plan.getDescription());
             ps.setString(2, plan.getStatus());
             ps.setInt(3, plan.getIdAction());
@@ -78,7 +78,8 @@ public class PlanAccionDAOImpl implements PlanAccionDAO {
     @Override
     public void eliminar(int id) {
         String sql = "DELETE FROM ACTIONS_PLAN WHERE id_action = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        try (Connection conexion = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, id);
             ps.executeUpdate();
             System.out.println("[PlanAccionDAO] Plan eliminado: ID " + id);

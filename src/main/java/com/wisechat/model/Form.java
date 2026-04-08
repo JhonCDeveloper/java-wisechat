@@ -14,6 +14,25 @@ public class Form {
 
     public Form() {}
 
+    /**
+     * Constructor sin ID para insertar nuevos registros (el ID lo genera AUTO_INCREMENT).
+     *
+     * @param idBusiness ID del negocio al que pertenece el formulario.
+     * @param title      Título descriptivo del formulario.
+     */
+    public Form(int idBusiness, String title) {
+        this.idBusiness = idBusiness;
+        this.title      = title;
+    }
+
+    /**
+     * Constructor completo para mapear registros desde la base de datos.
+     *
+     * @param idForm     ID del formulario (PK generado por JDBC).
+     * @param idBusiness ID del negocio asociado (FK).
+     * @param title      Título del formulario.
+     * @param createdAt  Timestamp de creación.
+     */
     public Form(int idForm, int idBusiness, String title, Timestamp createdAt) {
         this.idForm      = idForm;
         this.idBusiness  = idBusiness;

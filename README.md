@@ -67,17 +67,44 @@ Verás una salida en consola con reportes técnicos paso a paso.
 
 ---
 
-## 🌐 Despliegue Web en Tomcat 10
+## 🚀 Cómo Iniciar el Proyecto Completo (Backend + Frontend)
 
-Dado que la aplicación ha evolucionado a una versión Web empaquetada como `<packaging>war</packaging>`, necesitas desplegarla en un entorno **Apache Tomcat 10.x** usando **Jakarta EE 10**.
+Este proyecto funciona bajo una arquitectura **Cliente-Servidor**. El backend (Java) actúa como una API REST que provee datos al frontend construído en React.
 
-1. **Compilar/Empaquetar:** Asegúrate de ejecutar `mvn clean compile` o verificar que tu carpeta `target/classes` está actualizada con las últimas versiones de tus Servlets y DAOs.
-2. **Despliegue de Recursos:** El directorio `src/main/webapp/` (que contiene tus `.jsp` y `WEB-INF`) debe estar mapeado o copiado de forma directa en tu directorio de despliegue de Tomcat (ej. `webapps/TU_APP`).
-3. **Clases Compiladas:** El contenido de `target/classes/` debe proveerse en `WEB-INF/classes/` en el servidor Tomcat.
-4. **Controlador JDBC (`mysql-connector-j`):** Tomcat exige que el driver MySQL esté presente localmente. Copia el `.jar` del conector de MySQL directo a la carpeta de librerías de tu webapp: `WEB-INF/lib/`.
-5. **Acceso Web:** Enciende Tomcat (`startup.bat`) y visita `http://localhost:8080/TU_APP/` para navegar por la aplicación utilizando la interfaz gráfica construida con Tailwind CSS.
+### 1. Iniciar el Backend (Java REST API)
 
----
+El backend está construido con **Jakarta Servlet 6.0** y configurado para desplegarse como un `.war`. Requiere **Apache Tomcat 10+**.
+
+**Opción A: Usando IDE (Recomendado)**
+1. Abre el proyecto `wisechat-db` en **IntelliJ IDEA**, **Eclipse** o **VS Code (con Tomcat for Java extension)**.
+2. Configura un servidor local Tomcat 10 en tu IDE.
+3. Despliega la aplicación (suele bastar con darle a "Run" o "Debug" apuntando al servidor).
+4. El backend quedará expuesto por defecto en: `http://localhost:8080/wisechat-db/api/...`
+
+**Opción B: Despliegue Manual en Tomcat**
+1. Ejecuta `mvn clean package` para generar el archivo `target/wisechat-db-1.0-SNAPSHOT.war`.
+2. Renombra el archivo a `wisechat-db.war` y cópialo dentro de la carpeta `webapps/` de tu instalación de Tomcat 10.
+3. Inicia Tomcat (ej. `bin/startup.bat` o `bin/startup.sh`).
+
+### 2. Iniciar el Frontend (React)
+
+El frontend es una aplicación construida con **Vite + React**.
+
+1. Abre una nueva terminal y navega a la carpeta del frontend (si está al nivel del workspace, debe llamarse `react-wisechat` o similar).
+   ```bash
+   cd react-wisechat
+   ```
+2. Instala las dependencias (solo la primera vez):
+   ```bash
+   npm install
+   ```
+3. Inicia el servidor de desarrollo:
+   ```bash
+   npm run dev
+   ```
+4. Abre la URL que te proporciona Vite en tu navegador (usualmente `http://localhost:5173`).
+
+¡Listo! Tu frontend React ahora debería comunicarse de forma local con la base de datos MySQL a través de la API Java de Tomcat.
 
 ## 🏗️ Estructura del Proyecto
 
@@ -95,12 +122,10 @@ wisechat-db/
 │       │           ├── model/      # POJOs / Entidades
 │       │           ├── util/       # ConexionDB (Singleton JDBC)
 │       │           └── main/       # App.java (Ejecutable de prueba CLI)
-│       └── webapp/                 # Archivos Root Web
-│           ├── WEB-INF/
-│           │   └── web.xml         # Descriptor de Despliegue (EE 10)
-│           ├── index.jsp           # Vista Principal (Landing)
-│           ├── registro.jsp        # Formulario POST de Registro
-│           └── resultado.jsp       # Vista de Respuesta (Éxito/Error)
+│        └── webapp/                 # Archivos Root Web
+            ├── WEB-INF/
+            │   └── web.xml         # Descriptor de Despliegue (EE 10)
+            └── (Configuración CORS) # Filtros CORS para permitir que React acceda
 ├── pom.xml
 └── README.md
 ```
@@ -125,12 +150,13 @@ wisechat-db/
 
 ## 🔗 Tecnologías
 
-- **Java 17** — Lenguaje principal
-- **Jakarta EE 10** — Implementación de Servlets 6.0 y JSP 3.1
+- **Java 17** — Lenguaje principal del backend
+- **Jakarta EE 10** — Implementación de Servlets 6.0 para API REST
 - **Apache Tomcat 10** — Servidor Web / Contenedor de Servlets
-- **MySQL 8** — Motor de base de datos
-- **JDBC Nativo** — Persistencia con `PreparedStatement` (Seguro contra SQL Injection)
-- **Tailwind CSS** — Framework CSS para interfaces modernas y responsivas
-- **Maven** — Gestión de dependencias (`pom.xml` -> `<packaging>war</packaging>`)
-- **Patrón MVC** — Arquitectura web separando Model, View, Controller
-- **Patrón DAO & Singleton** — Separación de conexión DB y lógica de entidades
+- **MySQL 8** — Motor de base de datos relacional
+- **JDBC Nativo** — Persistencia con `PreparedStatement` seguro contra inyecciones SQL
+- **Gson (Google)** — Serialización y deserialización de JSON entre React y Java
+- **React 18 + Vite** — Framework frontend SPA web interactivo
+- **Tailwind CSS** — Framework CSS usado en React para interfaces modernas
+- **Maven** — Gestión de dependencias Java
+- **Patrón DAO & Singleton** — Separación de conexión DB y lógica de BD en Java

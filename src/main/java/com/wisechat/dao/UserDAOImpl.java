@@ -118,6 +118,49 @@ public class UserDAOImpl implements UserDAO {
         }
     }
 
+    @Override
+    public User buscarPorEmail(String email) {
+        String sql = "SELECT id_user, name, email, password, created_at FROM USER WHERE email = ?";
+        
+        try (Connection con = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, email);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapearUsuario(rs);
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("[UserDAOImpl] Error buscarPorEmail: " + e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public User autenticar(String email, String password) {
+        String sql = "SELECT id_user, name, email, password, created_at FROM USER WHERE email = ? AND password = ?";
+        
+        try (Connection con = ConexionDB.getInstancia().getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, email);
+            ps.setString(2, password);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapearUsuario(rs);
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("[UserDAOImpl] Error autenticar: " + e.getMessage());
+        }
+        return null;
+    }
+
     // Método auxiliar unicamente para estructurar el ResultSet
     private User mapearUsuario(ResultSet rs) throws SQLException {
         return new User(
